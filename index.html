@@ -11,7 +11,20 @@
         <header>
             <h1>Bio-Dôme Lunaire</h1>
             <p class="subtitle">Gestion de survie exobotanique</p>
+
+            <div id="energy-bar">
+                <span>⚡ Énergie: <span id="energy-display">0</span></span>
+            </div>
         </header>
+
+        <!-- Section Prestige (Cachée par défaut) -->
+        <section id="prestige-section" class="prestige-panel" style="display:none;">
+            <div class="crystal-display">
+                💎 Cristaux Martiens: <span id="martian-crystals">0</span>
+                <p class="bonus-text">Bonus de production: +<span id="crystal-bonus">0</span>%</p>
+            </div>
+            <button id="btn-prestige" onclick="doPrestige()">Voyage vers Mars</button>
+        </section>
 
         <section class="resources">
             <div class="resource-item">
@@ -24,51 +37,21 @@
         </section>
 
         <section class="actions">
-            <!-- On passe l'event à la fonction harvest pour positionner la particule -->
             <button id="btn-harvest" onclick="harvest(event)">Récolter</button>
+        </section>
+
+        <!-- Section Trophées -->
+        <section class="achievements">
+            <h2>Trophées</h2>
+            <div id="achievements-list">
+                <!-- Généré par JS -->
+            </div>
         </section>
 
         <section class="shop">
             <h2>Unités de Production</h2>
             <div id="producers-list">
-                <div class="producer" id="producer-botanistDrone">
-                    <div class="info">
-                        <h3>Drone Botaniste</h3>
-                        <p>Production: +1/sec</p>
-                    </div>
-                    <div class="controls">
-                        <span class="owned">Possédé: <span id="count-botanistDrone">0</span></span>
-                        <button onclick="buyProducer('botanistDrone')" id="btn-botanistDrone">
-                            Acheter (<span id="cost-botanistDrone">15</span>)
-                        </button>
-                    </div>
-                </div>
-
-                <div class="producer" id="producer-hydroBay">
-                    <div class="info">
-                        <h3>Baie Hydroponique</h3>
-                        <p>Production: +8/sec</p>
-                    </div>
-                    <div class="controls">
-                        <span class="owned">Possédé: <span id="count-hydroBay">0</span></span>
-                        <button onclick="buyProducer('hydroBay')" id="btn-hydroBay">
-                            Acheter (<span id="cost-hydroBay">100</span>)
-                        </button>
-                    </div>
-                </div>
-
-                <div class="producer" id="producer-bioDome">
-                    <div class="info">
-                        <h3>Bio-Dôme Lunaire</h3>
-                        <p>Production: +47/sec</p>
-                    </div>
-                    <div class="controls">
-                        <span class="owned">Possédé: <span id="count-bioDome">0</span></span>
-                        <button onclick="buyProducer('bioDome')" id="btn-bioDome">
-                            Acheter (<span id="cost-bioDome">1100</span>)
-                        </button>
-                    </div>
-                </div>
+                <!-- Généré ou mis à jour par JS pour inclure Solar Panel -->
             </div>
         </section>
 
