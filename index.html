@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bio-Dôme Lunaire</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <header>
+            <h1>Bio-Dôme Lunaire</h1>
+            <p class="subtitle">Gestion de survie exobotanique</p>
+        </header>
+
+        <section class="resources">
+            <div class="resource-item">
+                <span id="bio-plants" class="count">0</span>
+                <span class="label">Bio-Plantes</span>
+            </div>
+            <div class="production-rate">
+                <span id="gps">0</span> / seconde
+            </div>
+        </section>
+
+        <section class="actions">
+            <button id="btn-harvest" onclick="harvest()">Récolter</button>
+        </section>
+
+        <section class="shop">
+            <h2>Unités de Production</h2>
+            <div id="producers-list">
+                <!-- Les producteurs seront générés par JS ou on peut les mettre en dur -->
+                <div class="producer" id="producer-botanistDrone">
+                    <div class="info">
+                        <h3>Drone Botaniste</h3>
+                        <p>Production: +1/sec</p>
+                    </div>
+                    <div class="controls">
+                        <span class="owned">Possédé: <span id="count-botanistDrone">0</span></span>
+                        <button onclick="buyProducer('botanistDrone')" id="btn-botanistDrone">
+                            Acheter (<span id="cost-botanistDrone">15</span>)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="producer" id="producer-hydroBay">
+                    <div class="info">
+                        <h3>Baie Hydroponique</h3>
+                        <p>Production: +8/sec</p>
+                    </div>
+                    <div class="controls">
+                        <span class="owned">Possédé: <span id="count-hydroBay">0</span></span>
+                        <button onclick="buyProducer('hydroBay')" id="btn-hydroBay">
+                            Acheter (<span id="cost-hydroBay">100</span>)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="producer" id="producer-bioDome">
+                    <div class="info">
+                        <h3>Bio-Dôme Lunaire</h3>
+                        <p>Production: +47/sec</p>
+                    </div>
+                    <div class="controls">
+                        <span class="owned">Possédé: <span id="count-bioDome">0</span></span>
+                        <button onclick="buyProducer('bioDome')" id="btn-bioDome">
+                            Acheter (<span id="cost-bioDome">1100</span>)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
