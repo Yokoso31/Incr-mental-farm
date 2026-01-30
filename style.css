@@ -16,16 +16,19 @@
 }
 
 body {
-    font-family: 'Courier New', Courier, monospace; /* Sci-fi terminal feel */
+    font-family: 'Courier New', Courier, monospace;
     background-color: var(--bg-color);
     color: var(--text-main);
     line-height: 1.6;
+    /* Pour éviter le scroll horizontal si les particules sortent */
+    overflow-x: hidden;
 }
 
 .game-container {
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
+    position: relative; /* Pour positionner des éléments si besoin */
 }
 
 header {
@@ -84,18 +87,21 @@ h1 {
     font-weight: bold;
     cursor: pointer;
     border-radius: 50px;
-    transition: all 0.2s ease;
+    transition: all 0.1s ease;
     text-transform: uppercase;
+    user-select: none; /* Evite de sélectionner le texte quand on spam click */
 }
 
 #btn-harvest:hover {
-    background-color: var(--highlight);
-    color: var(--bg-color);
-    box-shadow: 0 0 20px var(--highlight);
+    background-color: rgba(102, 252, 241, 0.1);
+    box-shadow: 0 0 15px var(--highlight);
+    transform: translateY(-2px);
 }
 
 #btn-harvest:active {
     transform: scale(0.95);
+    background-color: var(--highlight);
+    color: var(--bg-color);
 }
 
 .shop h2 {
@@ -119,6 +125,7 @@ h1 {
 
 .producer:hover {
     border-color: var(--accent-green);
+    transform: translateX(5px);
 }
 
 .producer .info h3 {
@@ -165,4 +172,50 @@ h1 {
     background-color: var(--disabled);
     cursor: not-allowed;
     color: #888;
+}
+
+.settings {
+    margin-top: 40px;
+    text-align: center;
+    border-top: 1px solid #333;
+    padding-top: 20px;
+    margin-bottom: 20px;
+}
+
+.btn-reset {
+    background: transparent;
+    border: 1px solid #ff4d4d;
+    color: #ff4d4d;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+    border-radius: 5px;
+}
+
+.btn-reset:hover {
+    background: #ff4d4d;
+    color: white;
+}
+
+/* PARTICLES */
+.particle {
+    position: fixed; /* Fixed pour être relatif à la fenêtre, plus simple pour la souris */
+    color: var(--highlight);
+    font-weight: bold;
+    font-size: 1.2rem;
+    pointer-events: none; /* Clic au travers */
+    animation: floatUp 1s ease-out forwards;
+    z-index: 1000;
+}
+
+@keyframes floatUp {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-50px) scale(1.5);
+    }
 }

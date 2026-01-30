@@ -24,13 +24,13 @@
         </section>
 
         <section class="actions">
-            <button id="btn-harvest" onclick="harvest()">Récolter</button>
+            <!-- On passe l'event à la fonction harvest pour positionner la particule -->
+            <button id="btn-harvest" onclick="harvest(event)">Récolter</button>
         </section>
 
         <section class="shop">
             <h2>Unités de Production</h2>
             <div id="producers-list">
-                <!-- Les producteurs seront générés par JS ou on peut les mettre en dur -->
                 <div class="producer" id="producer-botanistDrone">
                     <div class="info">
                         <h3>Drone Botaniste</h3>
@@ -70,6 +70,10 @@
                     </div>
                 </div>
             </div>
+        </section>
+
+        <section class="settings">
+            <button onclick="resetGame()" class="btn-reset">Réinitialiser la progression</button>
         </section>
     </div>
 
