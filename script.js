@@ -1,10 +1,10 @@
 // --- CONFIGURATION CONSTANTE ---
 const CONFIG = {
     producers: {
-        botanistDrone: { baseCost: 15, production: 1, name: "Drone Botaniste", energyConsumption: 0 },
-        hydroBay: { baseCost: 100, production: 8, name: "Baie Hydroponique", energyConsumption: 1 },
-        bioDome: { baseCost: 1100, production: 47, name: "Bio-Dôme Lunaire", energyConsumption: 5 },
-        solarPanel: { baseCost: 50, production: 0, name: "Panneau Solaire", energyProduction: 2, type: 'energy' }
+        botanistDrone: { baseCost: 15, production: 1, name: "Drone Botaniste", energyConsumption: 0, icon: "🤖" },
+        hydroBay: { baseCost: 100, production: 8, name: "Baie Hydroponique", energyConsumption: 1, icon: "💧" },
+        bioDome: { baseCost: 1100, production: 47, name: "Bio-Dôme Lunaire", energyConsumption: 5, icon: "🌑" },
+        solarPanel: { baseCost: 50, production: 0, name: "Panneau Solaire", energyProduction: 2, type: 'energy', icon: "☀️" }
     },
     upgrades: {
         fertilizer: {
@@ -528,7 +528,7 @@ function updateUI() {
             pDiv.id = `producer-${id}`;
             pDiv.innerHTML = `
                 <div class="info">
-                    <h3>${pConfig.name}</h3>
+                    <h3><span class="producer-icon">${pConfig.icon}</span> ${pConfig.name}</h3>
                     <p>Production: ${pConfig.production > 0 ? '+' + pConfig.production : '0'}/sec</p>
                     <p class="energy-info" style="font-size: 0.7em; color: #aaa;">
                         ${pConfig.energyProduction ? '⚡ Produit: ' + pConfig.energyProduction : ''}
