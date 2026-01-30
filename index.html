@@ -79,10 +79,27 @@
             </div>
         </section>
 
+        <section class="stats">
+            <h2>Statistiques</h2>
+            <div class="stats-grid">
+                <p>Temps de jeu: <span id="stat-time">0h 0m</span></p>
+                <p>Total Clics: <span id="stat-clicks">0</span></p>
+                <p>Total Plantes: <span id="stat-total">0</span></p>
+            </div>
+        </section>
+
         <section class="settings">
-            <button onclick="resetGame()" class="btn-reset">Réinitialiser la progression</button>
+            <h2>Paramètres</h2>
+            <div class="settings-buttons">
+                <button onclick="exportSave()" class="btn-secondary">Exporter Sauvegarde</button>
+                <button onclick="importSave()" class="btn-secondary">Importer Sauvegarde</button>
+                <button onclick="resetGame()" class="btn-reset">Réinitialiser (Danger)</button>
+            </div>
         </section>
     </div>
+
+    <!-- Zone de notification -->
+    <div id="notification-area"></div>
 
     <script src="script.js"></script>
 </body>

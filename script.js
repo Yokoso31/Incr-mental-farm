@@ -29,7 +29,39 @@ const CONFIG = {
             target: "hydroBay",
             value: 2
         }
-    }
+    },
+    events: [
+        {
+            name: "Pluie de Météorites",
+            desc: "Une météorite riche en nutriments s'est écrasée !",
+            type: "instant",
+            gainMultiplier: 60, // Gagne 60s de prod
+            prob: 0.3
+        },
+        {
+            name: "Éruption Solaire",
+            desc: "Les panneaux solaires surchargent ! Production x2 pendant 30s.",
+            type: "buff",
+            duration: 30,
+            effectValue: 2,
+            prob: 0.2
+        },
+        {
+            name: "Fuite d'Oxygène",
+            desc: "Une maintenance d'urgence ralentit la production (-50% pendant 30s).",
+            type: "debuff",
+            duration: 30,
+            effectValue: 0.5,
+            prob: 0.2
+        },
+        {
+            name: "Découverte Archéologique",
+            desc: "Vous avez trouvé une ancienne cache de ressources.",
+            type: "instant",
+            gainFlat: 500,
+            prob: 0.3
+        }
+    ]
 };
 
 // --- ETAT DU JEU (Initial) ---
@@ -43,8 +75,15 @@ const DEFAULT_STATE = {
         bioDome: { count: 0 }
     },
     upgrades: [],
-    lastSaveTime: Date.now()
+    lastSaveTime: Date.now(),
+    // Stats
+    startTime: Date.now(),
+    totalClicks: 0,
+    lifetimeBioPlants: 0
 };
+
+// --- ETAT TEMPORAIRE (Non sauvegardé) ---
+let activeEvent = null; // { endTime, value }
 
 // Initialisation de l'état
 let gameData = JSON.parse(JSON.stringify(DEFAULT_STATE));
@@ -56,11 +95,18 @@ function formatNumber(num) {
     return Math.floor(num);
 }
 
+function formatTime(ms) {
+    let seconds = Math.floor(ms / 1000);
+    let hours = Math.floor(seconds / 3600);
+    let minutes = Math.floor((seconds % 3600) / 60);
+    return `${hours}h ${minutes}m`;
+}
+
 function hasUpgrade(id) {
     return gameData.upgrades.includes(id);
 }
 
-// --- SYSTÈME DE SAUVEGARDE ---
+// --- SYSTÈME DE SAUVEGARDE & EXPORT ---
 function saveGame() {
     gameData.lastSaveTime = Date.now();
     localStorage.setItem('bioDomeSave', JSON.stringify(gameData));
@@ -75,6 +121,7 @@ function loadGame() {
             gameData = { ...DEFAULT_STATE, ...savedData };
             gameData.producers = { ...DEFAULT_STATE.producers, ...savedData.producers };
             if (!gameData.upgrades) gameData.upgrades = [];
+            if (!gameData.startTime) gameData.startTime = Date.now();
 
             // Calcul Gain Hors Ligne
             if (gameData.lastSaveTime) {
@@ -82,12 +129,11 @@ function loadGame() {
                 const diffSeconds = (now - gameData.lastSaveTime) / 1000;
 
                 if (diffSeconds > 10) {
-                    const gps = getProductionPerSecond();
+                    const gps = getProductionPerSecond(false); // Ignore temp buffs
                     if (gps > 0) {
                         const offlineGain = gps * diffSeconds;
-                        gameData.bioPlants += offlineGain;
-                        gameData.totalBioPlants += offlineGain;
-                        // On retarde un peu l'alerte pour laisser le DOM se charger
+                        addPlants(offlineGain);
+
                         setTimeout(() => {
                             alert(`Bienvenue de retour !\nVous avez gagné ${formatNumber(offlineGain)} Bio-Plantes pendant votre absence (${formatNumber(diffSeconds)}s).`);
                         }, 500);
@@ -107,8 +153,36 @@ function resetGame() {
         localStorage.removeItem('bioDomeSave');
         gameData = JSON.parse(JSON.stringify(DEFAULT_STATE));
         gameData.lastSaveTime = Date.now();
+        gameData.startTime = Date.now();
+        activeEvent = null;
         updateUI();
         console.log("Jeu réinitialisé.");
+    }
+}
+
+function exportSave() {
+    const saveString = btoa(JSON.stringify(gameData));
+    prompt("Copiez votre code de sauvegarde :", saveString);
+}
+
+function importSave() {
+    const saveString = prompt("Collez votre code de sauvegarde :");
+    if (saveString) {
+        try {
+            const json = atob(saveString);
+            const savedData = JSON.parse(json);
+            if (savedData.bioPlants !== undefined) {
+                gameData = { ...DEFAULT_STATE, ...savedData };
+                saveGame();
+                updateUI();
+                alert("Sauvegarde chargée avec succès !");
+            } else {
+                alert("Sauvegarde invalide.");
+            }
+        } catch (e) {
+            alert("Erreur lors de l'importation. Code invalide.");
+            console.error(e);
+        }
     }
 }
 
@@ -127,14 +201,36 @@ function createParticle(x, y, text) {
     }, 1000);
 }
 
+function showNotification(title, message, type = 'neutral') {
+    const container = document.getElementById('notification-area');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<h4>${title}</h4><p>${message}</p>`;
+
+    container.appendChild(toast);
+
+    // Auto remove
+    setTimeout(() => {
+        toast.style.animation = 'slideIn 0.3s reverse'; // Pas implémenté mais disparaît
+        toast.remove();
+    }, 5000);
+}
+
 // --- LOGIQUE METIER ---
+function addPlants(amount) {
+    gameData.bioPlants += amount;
+    gameData.totalBioPlants += amount;
+    if (!gameData.lifetimeBioPlants) gameData.lifetimeBioPlants = 0;
+    gameData.lifetimeBioPlants += amount;
+}
+
 function getProducerCost(id) {
     const pConfig = CONFIG.producers[id];
     const pState = gameData.producers[id];
     return Math.floor(pConfig.baseCost * Math.pow(1.15, pState.count));
 }
 
-function getProductionPerSecond() {
+function getProductionPerSecond(includeTemp = true) {
     let rate = 0;
     for (let id in CONFIG.producers) {
         if (gameData.producers[id]) {
@@ -151,21 +247,25 @@ function getProductionPerSecond() {
             rate += pProd;
         }
     }
+
+    // Effet d'événement temporaire
+    if (includeTemp && activeEvent && activeEvent.endTime > Date.now()) {
+        rate *= activeEvent.value;
+    }
+
     return rate;
 }
 
 function harvest(event) {
     let val = gameData.clickValue;
 
-    // Effet Gants Bioniques
     if (hasUpgrade('bionicGloves')) {
         val += getProductionPerSecond() * CONFIG.upgrades.bionicGloves.value;
     }
 
-    gameData.bioPlants += val;
-    gameData.totalBioPlants += val;
+    addPlants(val);
+    gameData.totalClicks = (gameData.totalClicks || 0) + 1;
 
-    // Effet visuel
     if (event) {
         const offsetX = (Math.random() - 0.5) * 20;
         const offsetY = (Math.random() - 0.5) * 20;
@@ -195,14 +295,49 @@ function buyUpgrade(id) {
     }
 }
 
+// --- SYSTEME D'EVENEMENTS ---
+function triggerRandomEvent() {
+    // 30% de chance qu'un event se produise à chaque check
+    if (Math.random() > 0.3) return;
+
+    // Choisir un event pondéré (simple ici: equiprobable parmi liste)
+    const eventConfig = CONFIG.events[Math.floor(Math.random() * CONFIG.events.length)];
+
+    // Appliquer effet
+    if (eventConfig.type === 'instant') {
+        let gain = 0;
+        if (eventConfig.gainMultiplier) {
+            gain = getProductionPerSecond(false) * eventConfig.gainMultiplier;
+        } else if (eventConfig.gainFlat) {
+            gain = eventConfig.gainFlat;
+        }
+        if (gain < 10) gain = 10; // Minimum syndical
+        addPlants(gain);
+        showNotification(eventConfig.name, `${eventConfig.desc} (+${formatNumber(gain)})`, 'positive');
+    }
+    else if (eventConfig.type === 'buff' || eventConfig.type === 'debuff') {
+        activeEvent = {
+            endTime: Date.now() + (eventConfig.duration * 1000),
+            value: eventConfig.effectValue
+        };
+        const type = eventConfig.type === 'buff' ? 'positive' : 'negative';
+        showNotification(eventConfig.name, eventConfig.desc, type);
+    }
+}
+
 // --- BOUCLE DE JEU ---
 // Production passive
 setInterval(() => {
     let passiveGain = getProductionPerSecond();
     if (passiveGain > 0) {
-        gameData.bioPlants += passiveGain;
-        gameData.totalBioPlants += passiveGain;
+        addPlants(passiveGain);
         updateUI();
+    }
+
+    // Nettoyage event expiré
+    if (activeEvent && activeEvent.endTime <= Date.now()) {
+        activeEvent = null;
+        updateUI(); // Pour rafraichir le GPS affiché
     }
 }, 1000);
 
@@ -211,11 +346,39 @@ setInterval(() => {
     saveGame();
 }, 10000);
 
+// Check Events (toutes les 60s)
+setInterval(() => {
+    // Seulement si le joueur a commencé à jouer un peu (ex: 100 plantes total)
+    if (gameData.lifetimeBioPlants > 100) {
+        triggerRandomEvent();
+    }
+}, 60000);
+
 // --- INTERFACE ---
 function updateUI() {
     // Ressources
     document.getElementById('bio-plants').textContent = formatNumber(gameData.bioPlants);
-    document.getElementById('gps').textContent = formatNumber(getProductionPerSecond());
+
+    const gps = getProductionPerSecond();
+    let gpsText = formatNumber(gps);
+
+    // Indicateur visuel si buff/debuff
+    const gpsEl = document.getElementById('gps');
+    if (activeEvent && activeEvent.endTime > Date.now()) {
+        gpsEl.style.color = activeEvent.value > 1 ? '#00ff00' : '#ff0000';
+        gpsText += activeEvent.value > 1 ? " (Boost!)" : " (Panne!)";
+    } else {
+        gpsEl.style.color = '';
+    }
+    gpsEl.textContent = gpsText;
+
+    // Stats UI
+    if (document.getElementById('stat-time')) {
+        let timePlayed = Date.now() - (gameData.startTime || Date.now());
+        document.getElementById('stat-time').textContent = formatTime(timePlayed);
+        document.getElementById('stat-clicks').textContent = formatNumber(gameData.totalClicks || 0);
+        document.getElementById('stat-total').textContent = formatNumber(gameData.lifetimeBioPlants || 0);
+    }
 
     // Producteurs
     for (let id in CONFIG.producers) {
@@ -232,7 +395,6 @@ function updateUI() {
     }
 
     // Améliorations
-    // On génère la liste si elle est vide (au premier chargement)
     const upgradesContainer = document.getElementById('upgrades-container');
     if (upgradesContainer && upgradesContainer.children.length === 0) {
         for (let uid in CONFIG.upgrades) {

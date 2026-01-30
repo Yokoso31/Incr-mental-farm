@@ -28,6 +28,7 @@ body {
     margin: 0 auto;
     padding: 20px;
     position: relative;
+    padding-bottom: 80px; /* Espace pour les stats/settings */
 }
 
 header {
@@ -103,7 +104,7 @@ h1 {
     color: var(--bg-color);
 }
 
-.shop h2, .upgrades h2 {
+.shop h2, .upgrades h2, .stats h2, .settings h2 {
     color: var(--accent-green);
     margin-bottom: 15px;
     border-left: 4px solid var(--highlight);
@@ -242,19 +243,61 @@ h1 {
     color: #888;
 }
 
-.settings {
+/* STATS & SETTINGS */
+.stats, .settings {
     margin-top: 40px;
+    background-color: rgba(31, 40, 51, 0.5);
+    padding: 15px;
+    border-radius: 5px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
     text-align: center;
-    border-top: 1px solid #333;
-    padding-top: 20px;
-    margin-bottom: 20px;
+}
+
+.stats-grid p {
+    font-size: 0.9rem;
+    color: #aaa;
+}
+
+.stats-grid span {
+    display: block;
+    font-size: 1.2rem;
+    color: var(--highlight);
+    font-weight: bold;
+}
+
+.settings-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.btn-secondary {
+    background: transparent;
+    border: 1px solid var(--accent-green);
+    color: var(--accent-green);
+    padding: 10px 15px;
+    cursor: pointer;
+    font-family: inherit;
+    border-radius: 5px;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background: var(--accent-green);
+    color: #fff;
 }
 
 .btn-reset {
     background: transparent;
     border: 1px solid #ff4d4d;
     color: #ff4d4d;
-    padding: 10px 20px;
+    padding: 10px 15px;
     cursor: pointer;
     font-family: inherit;
     transition: all 0.2s;
@@ -286,4 +329,46 @@ h1 {
         opacity: 0;
         transform: translateY(-50px) scale(1.5);
     }
+}
+
+/* NOTIFICATION TOAST */
+#notification-area {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 2000;
+}
+
+.toast {
+    background-color: var(--card-bg);
+    border-left: 5px solid var(--highlight);
+    color: #fff;
+    padding: 15px 20px;
+    min-width: 250px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    border-radius: 3px;
+    animation: slideIn 0.3s ease-out forwards;
+    opacity: 0.95;
+}
+
+.toast.negative {
+    border-left-color: #ff4d4d;
+}
+
+.toast h4 {
+    margin-bottom: 5px;
+    font-size: 1rem;
+}
+
+.toast p {
+    font-size: 0.85rem;
+    color: #ccc;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 0.95; }
 }
