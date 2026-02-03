@@ -1,10 +1,18 @@
+// --- ASSETS GRAPHIQUES (SVG) ---
+const SVGS = {
+    botanistDrone: `<svg viewBox="0 0 64 64" class="unit-svg"><circle cx="32" cy="32" r="10" fill="#66fcf1" opacity="0.8"/><path d="M12 32H22M42 32H52M32 12V22M32 42V52" stroke="#45a29e" stroke-width="3"/><circle cx="12" cy="32" r="4" fill="#45a29e"/><circle cx="52" cy="32" r="4" fill="#45a29e"/><circle cx="32" cy="12" r="4" fill="#45a29e"/><circle cx="32" cy="52" r="4" fill="#45a29e"/></svg>`,
+    hydroBay: `<svg viewBox="0 0 64 64" class="unit-svg"><path d="M32 4L54 40C54 52.1503 44.1503 62 32 62C19.8497 62 10 52.1503 10 40L32 4Z" fill="#45a29e" opacity="0.6"/><path d="M32 16L42 40C42 45.5228 37.5228 50 32 50C26.4772 50 22 45.5228 22 40L32 16Z" fill="#66fcf1"/></svg>`,
+    bioDome: `<svg viewBox="0 0 64 64" class="unit-svg"><path d="M4 60H60" stroke="#45a29e" stroke-width="2"/><path d="M8 60C8 30 20 10 32 10C44 10 56 30 56 60" fill="rgba(102, 252, 241, 0.2)" stroke="#66fcf1" stroke-width="2"/><rect x="28" y="40" width="8" height="20" fill="#45a29e"/></svg>`,
+    solarPanel: `<svg viewBox="0 0 64 64" class="unit-svg"><rect x="15" y="15" width="34" height="34" fill="#1f2833" stroke="#f1c40f" stroke-width="2"/><line x1="15" y1="26" x2="49" y2="26" stroke="#f1c40f"/><line x1="15" y1="37" x2="49" y2="37" stroke="#f1c40f"/><line x1="26" y1="15" x2="26" y2="49" stroke="#f1c40f"/><line x1="37" y1="15" x2="37" y2="49" stroke="#f1c40f"/></svg>`
+};
+
 // --- CONFIGURATION CONSTANTE ---
 const CONFIG = {
     producers: {
-        botanistDrone: { baseCost: 15, production: 1, name: "Drone Botaniste", energyConsumption: 0, icon: "🤖", animation: "float" },
-        hydroBay: { baseCost: 100, production: 8, name: "Baie Hydroponique", energyConsumption: 1, icon: "💧", animation: "float" },
-        bioDome: { baseCost: 1100, production: 47, name: "Bio-Dôme Lunaire", energyConsumption: 5, icon: "🌑", animation: "pulse" },
-        solarPanel: { baseCost: 50, production: 0, name: "Panneau Solaire", energyProduction: 2, type: 'energy', icon: "☀️", animation: "spin" }
+        botanistDrone: { baseCost: 15, production: 1, name: "Drone Botaniste", energyConsumption: 0, icon: SVGS.botanistDrone, animation: "float" },
+        hydroBay: { baseCost: 100, production: 8, name: "Baie Hydroponique", energyConsumption: 1, icon: SVGS.hydroBay, animation: "float" },
+        bioDome: { baseCost: 1100, production: 47, name: "Bio-Dôme Lunaire", energyConsumption: 5, icon: SVGS.bioDome, animation: "pulse" },
+        solarPanel: { baseCost: 50, production: 0, name: "Panneau Solaire", energyProduction: 2, type: 'energy', icon: SVGS.solarPanel, animation: "spin" }
     },
     upgrades: {
         fertilizer: {
@@ -100,6 +108,7 @@ const DEFAULT_STATE = {
 
 // --- ETAT TEMPORAIRE ---
 let activeEvent = null;
+let renderedCounts = {}; // Pour le suivi visuel
 
 // Initialisation
 let gameData = JSON.parse(JSON.stringify(DEFAULT_STATE));
@@ -609,6 +618,9 @@ function updateUI() {
         }
     }
 
+    // Base Visuelle
+    updateBaseGrid();
+
     // Améliorations
     const upgradesContainer = document.getElementById('upgrades-container');
     if (upgradesContainer && upgradesContainer.children.length === 0) {
@@ -644,6 +656,55 @@ function updateUI() {
                 item.classList.remove('bought');
                 btn.disabled = gameData.bioPlants < u.cost;
             }
+        }
+    }
+}
+
+// --- FONCTION GRID VISUELLE ---
+function updateBaseGrid() {
+    const grid = document.getElementById('base-grid');
+    if (!grid) return;
+
+    // Check Reset (Prestige)
+    let totalReal = 0;
+    for (let k in gameData.producers) totalReal += gameData.producers[k].count;
+
+    // Si on a moins de batiments qu'avant, c'est un reset -> tout effacer
+    let totalRendered = 0;
+    for (let k in renderedCounts) totalRendered += renderedCounts[k];
+
+    if (totalReal < totalRendered) {
+        grid.innerHTML = '';
+        renderedCounts = {};
+    }
+
+    for (let id in gameData.producers) {
+        const count = gameData.producers[id].count;
+        if (!renderedCounts[id]) renderedCounts[id] = 0;
+
+        if (count > renderedCounts[id]) {
+            const diff = count - renderedCounts[id];
+
+            // On ajoute visuellement, avec un plafond pour éviter de faire planter le navigateur
+            // Max 30 icônes par type affichées
+            const MAX_DISPLAY = 30;
+
+            // Nombre d'unités déjà affichées (supposé capé à MAX_DISPLAY)
+            let displayed = Math.min(renderedCounts[id], MAX_DISPLAY);
+
+            for (let i = 0; i < diff; i++) {
+                if (displayed >= MAX_DISPLAY) {
+                   // On a atteint le max visuel, on ne fait rien
+                } else {
+                     const div = document.createElement('div');
+                     div.className = 'base-unit';
+                     div.innerHTML = CONFIG.producers[id].icon;
+                     div.title = `${CONFIG.producers[id].name} (Unité ${renderedCounts[id] + 1})`;
+                     grid.appendChild(div);
+                     displayed++;
+                }
+            }
+            renderedCounts[id] = count;
         }
     }
 }
