@@ -1,10 +1,10 @@
 // --- CONFIGURATION CONSTANTE ---
 const CONFIG = {
     producers: {
-        botanistDrone: { baseCost: 15, production: 1, name: "Drone Botaniste", energyConsumption: 0, icon: "🤖" },
-        hydroBay: { baseCost: 100, production: 8, name: "Baie Hydroponique", energyConsumption: 1, icon: "💧" },
-        bioDome: { baseCost: 1100, production: 47, name: "Bio-Dôme Lunaire", energyConsumption: 5, icon: "🌑" },
-        solarPanel: { baseCost: 50, production: 0, name: "Panneau Solaire", energyProduction: 2, type: 'energy', icon: "☀️" }
+        botanistDrone: { baseCost: 15, production: 1, name: "Drone Botaniste", energyConsumption: 0, icon: "🤖", animation: "float" },
+        hydroBay: { baseCost: 100, production: 8, name: "Baie Hydroponique", energyConsumption: 1, icon: "💧", animation: "float" },
+        bioDome: { baseCost: 1100, production: 47, name: "Bio-Dôme Lunaire", energyConsumption: 5, icon: "🌑", animation: "pulse" },
+        solarPanel: { baseCost: 50, production: 0, name: "Panneau Solaire", energyProduction: 2, type: 'energy', icon: "☀️", animation: "spin" }
     },
     upgrades: {
         fertilizer: {
@@ -312,7 +312,7 @@ function loadGame() {
                 if(savedData.producers && savedData.producers[key]) {
                     gameData.producers[key] = savedData.producers[key];
                 } else {
-                    gameData.producers[key] = DEFAULT_STATE.producers[key];
+                    gameData.producers[key] = { ...DEFAULT_STATE.producers[key] };
                 }
             }
 
@@ -402,8 +402,27 @@ function showNotification(title, message, type = 'neutral') {
 
 // --- SYSTEME D'EVENEMENTS ---
 function triggerRandomEvent() {
+    // Sélection pondérée par 'prob'
+    const rand = Math.random();
+    let cumulative = 0;
+    let eventConfig = null;
+
+    // Normalisation si la somme != 1 (sécurité)
+    const totalProb = CONFIG.events.reduce((sum, e) => sum + e.prob, 0);
+    const normalizedRand = rand * totalProb;
+
+    for (const event of CONFIG.events) {
+        cumulative += event.prob;
+        if (normalizedRand < cumulative) {
+            eventConfig = event;
+            break;
+        }
+    }
+
+    if (!eventConfig) return; // Sécurité
+
+    // Chance globale d'avoir un événement (30% pour ne pas spammer chaque minute)
     if (Math.random() > 0.3) return;
-    const eventConfig = CONFIG.events[Math.floor(Math.random() * CONFIG.events.length)];
 
     if (eventConfig.type === 'instant') {
         let gain = 0;
@@ -457,13 +476,30 @@ function updateUI() {
 
     // Energie UI
     const energyEl = document.getElementById('energy-display');
-    if (energyEl) {
-        energyEl.textContent = `${energy.produced - energy.consumed} (Prod: ${energy.produced} | Conso: ${energy.consumed})`;
+    const fillEl = document.getElementById('energy-bar-fill');
+
+    if (energyEl && fillEl) {
+        let pct = 0;
+        if (energy.produced > 0) {
+            pct = (energy.consumed / energy.produced) * 100;
+        } else if (energy.consumed > 0) {
+            pct = 100;
+        }
+
+        const visualPct = Math.min(pct, 100);
+        fillEl.style.width = `${visualPct}%`;
+
         if (energy.deficit) {
-            energyEl.style.color = '#ff4d4d';
+            fillEl.style.background = 'linear-gradient(90deg, #ff4d4d, #c0392b)';
+            fillEl.style.boxShadow = '0 0 15px #ff4d4d';
+            energyEl.style.color = '#ff9999';
+            energyEl.textContent = `${Math.floor(pct)}% (DÉFICIT!)`;
             gpsText += " (MANQUE ÉNERGIE!)";
         } else {
-            energyEl.style.color = '#66fcf1';
+            fillEl.style.background = 'linear-gradient(90deg, var(--accent-green), var(--highlight))';
+            fillEl.style.boxShadow = '0 0 15px var(--highlight)';
+            energyEl.style.color = '#fff';
+            energyEl.textContent = `${Math.floor(pct)}% (Prod: ${energy.produced})`;
         }
     }
 
@@ -528,7 +564,7 @@ function updateUI() {
             pDiv.id = `producer-${id}`;
             pDiv.innerHTML = `
                 <div class="info">
-                    <h3><span class="producer-icon">${pConfig.icon}</span> ${pConfig.name}</h3>
+                    <h3><span class="producer-icon ${pConfig.animation}">${pConfig.icon}</span> ${pConfig.name}</h3>
                     <p>Production: ${pConfig.production > 0 ? '+' + pConfig.production : '0'}/sec</p>
                     <p class="energy-info" style="font-size: 0.7em; color: #aaa;">
                         ${pConfig.energyProduction ? '⚡ Produit: ' + pConfig.energyProduction : ''}

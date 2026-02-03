@@ -71,15 +71,68 @@ header {
     padding-bottom: 15px;
 }
 
-#energy-bar {
-    margin-top: 10px;
-    font-size: 0.9rem;
-    color: var(--highlight);
-    background-color: rgba(0,0,0,0.6);
-    padding: 5px 15px;
-    border-radius: 20px;
-    display: inline-block;
+#energy-wrapper {
+    width: 300px;
+    max-width: 90%;
+    margin: 15px auto;
+    position: relative;
+    background: rgba(11, 12, 16, 0.8);
     border: 1px solid var(--accent-green);
+    border-radius: 15px;
+    height: 25px;
+    overflow: hidden;
+    box-shadow: 0 0 10px rgba(69, 162, 158, 0.2);
+}
+
+#energy-bar-bg {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+#energy-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent-green), var(--highlight));
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s;
+    box-shadow: 0 0 15px var(--highlight);
+}
+
+#energy-text-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 0 4px #000;
+    z-index: 2;
+    letter-spacing: 1px;
+}
+
+/* New Animations */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); text-shadow: 0 0 10px var(--highlight); }
+    50% { transform: scale(1.15); text-shadow: 0 0 20px var(--highlight); }
+    100% { transform: scale(1); text-shadow: 0 0 10px var(--highlight); }
+}
+
+.producer-icon.spin {
+    animation: spin 8s linear infinite;
+}
+
+.producer-icon.pulse {
+    animation: pulse 2s ease-in-out infinite;
 }
 
 h1 {
