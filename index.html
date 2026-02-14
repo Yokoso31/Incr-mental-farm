@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bio-Dôme Lunaire</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Fond animé -->
+    <div id="stars-container">
+        <div class="star" style="top: 10%; left: 20%; width: 2px; height: 2px; animation-duration: 3s;"></div>
+        <div class="star" style="top: 30%; left: 80%; width: 3px; height: 3px; animation-duration: 4s;"></div>
+        <div class="star" style="top: 70%; left: 40%; width: 2px; height: 2px; animation-duration: 2.5s;"></div>
+        <div class="star" style="top: 50%; left: 10%; width: 1px; height: 1px; animation-duration: 5s;"></div>
+        <div class="star" style="top: 80%; left: 90%; width: 2px; height: 2px; animation-duration: 3.5s;"></div>
+        <div class="star" style="top: 20%; left: 60%; width: 1px; height: 1px; animation-duration: 4.5s;"></div>
+        <div class="star" style="top: 90%; left: 30%; width: 3px; height: 3px; animation-duration: 6s;"></div>
+        <!-- On pourrait en générer plus en JS mais ça suffit pour l'ambiance -->
+    </div>
+
+    <div class="game-container">
+        <header>
+            <h1>Bio-Dôme Lunaire</h1>
+            <p class="subtitle">Gestion de survie exobotanique</p>
+
+            <div id="energy-wrapper">
+                <div id="energy-bar-bg">
+                    <div id="energy-bar-fill"></div>
+                </div>
+                <div id="energy-text-overlay">
+                    ⚡ Charge Réseau: <span id="energy-display">0%</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Section Prestige (Cachée par défaut) -->
+        <section id="prestige-section" class="prestige-panel" style="display:none;">
+            <div class="crystal-display">
+                💎 Cristaux Martiens: <span id="martian-crystals">0</span>
+                <p class="bonus-text">Bonus de production: +<span id="crystal-bonus">0</span>%</p>
+            </div>
+            <button id="btn-prestige" onclick="doPrestige()">Voyage vers Mars</button>
+        </section>
+
+        <section class="resources">
+            <div class="resource-item">
+                <span id="bio-plants" class="count">0</span>
+                <span class="label">Bio-Plantes</span>
+            </div>
+            <div class="production-rate">
+                <span id="gps">0</span> / seconde
+            </div>
+        </section>
+
+        <!-- Aperçu visuel de la base -->
+        <section id="base-visuals">
+            <h2 style="font-size: 1rem; color: var(--accent-green); margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px;">
+                Aperçu Orbital
+            </h2>
+            <div id="base-grid">
+                <!-- Les unités achetées apparaîtront ici -->
+            </div>
+        </section>
+
+        <section class="actions">
+            <button id="btn-harvest" onclick="harvest(event)">Récolter</button>
+        </section>
+
+        <!-- Section Trophées -->
+        <section class="achievements">
+            <h2>Trophées</h2>
+            <div id="achievements-list">
+                <!-- Généré par JS -->
+            </div>
+        </section>
+
+        <section class="shop">
+            <h2>Unités de Production</h2>
+            <div id="producers-list">
+                <!-- Généré ou mis à jour par JS pour inclure Solar Panel -->
+            </div>
+        </section>
+
+        <section class="upgrades">
+            <h2>Laboratoire</h2>
+            <div id="upgrades-container">
+                <!-- Les upgrades seront générés par JS ici -->
+            </div>
+        </section>
+
+        <section class="stats">
+            <h2>Statistiques</h2>
+            <div class="stats-grid">
+                <p>Temps de jeu: <span id="stat-time">0h 0m</span></p>
+                <p>Total Clics: <span id="stat-clicks">0</span></p>
+                <p>Total Plantes: <span id="stat-total">0</span></p>
+            </div>
+        </section>
+
+        <section class="settings">
+            <h2>Paramètres</h2>
+            <div class="settings-buttons">
+                <button onclick="exportSave()" class="btn-secondary">Exporter Sauvegarde</button>
+                <button onclick="importSave()" class="btn-secondary">Importer Sauvegarde</button>
+                <button onclick="resetGame()" class="btn-reset">Réinitialiser (Danger)</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Zone de notification -->
+    <div id="notification-area"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
